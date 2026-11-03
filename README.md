@@ -37,12 +37,12 @@ Pila provisional, pendiente de confirmar:
 
 ## Estado del proyecto
 
-En fase inicial: configuración del repositorio y de la gestión del proyecto.
+En fase inicial: configruación del repositorio y de la gestión del poroyecto.
 
 ## Gestión del proyecto
 
 - **Código:** este repositorio de GitHub.
-- **Tareas y planificación:** [Zube] https://zube.io/agrogmao/agrogmao/w/workspace-1/kanban.
+- **Tareas y planificación:** Zube.io (enlace pendiente de añadir).
 
 ## Cómo contribuir
 
