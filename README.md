@@ -42,7 +42,7 @@ En fase inicial: configuración del repositorio y de la gestión del proyecto.
 ## Gestión del proyecto
 
 - **Código:** este repositorio de GitHub.
-- **Tareas y planificación:** [Zube] https://zube.io/agrogmao/agrogmao/w/workspace-1/kanban.
+- **Tareas y planificación:** [Zube](https://zube.io/agrogmao/agrogmao/w/workspace-1/kanban)
 
 ## Cómo contribuir
 
