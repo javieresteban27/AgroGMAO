@@ -1,0 +1,12 @@
+.git
+.github
+.venv
+venv
+__pychache__
+*.pyc
+.env
+.env.*
+!.env.example
+staticfiles
+media
+db.sqlite3
