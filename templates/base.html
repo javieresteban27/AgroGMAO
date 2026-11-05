@@ -1,0 +1,48 @@
+{% load i18n static %}{% get_current_language as LANGUAGE_CODE %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}AgroGMAO{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'core/vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="{% url 'inicio' %}">AgroGMAO</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+              data-bs-target="#menu-principal" aria-controls="menu-principal"
+              aria-expanded="false" aria-label="{% translate 'Mostrar u ocultar el menú' %}">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="menu-principal">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'inicio' %}">{% translate "Inicio" %}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container flex-grow-1 py-4">
+    {% for mensaje in messages %}
+      <div class="alert alert-{{ mensaje.tags }} alert-dismissible fade show" role="alert">
+        {{ mensaje }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                aria-label="{% translate 'Cerrar' %}"></button>
+      </div>
+    {% endfor %}
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <footer class="bg-light border-top py-3 mt-auto">
+    <div class="container text-body-secondary small">
+      {% translate "Sistema de gestión del mantenimiento de maquinaria agrícola" %}
+    </div>
+  </footer>
+
+  <script src="{% static 'core/vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

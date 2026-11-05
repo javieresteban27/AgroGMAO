@@ -1,0 +1,46 @@
+/* Áreas táctiles de al menos 48 px (UX-04) */
+.btn,
+.form-control,
+.form-select {
+  min-height: 48px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar .nav-link {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+}
+
+.navbar-toggler {
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.alert-dismissible .btn-close {
+  box-sizing: border-box;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+}
+
+/* Contraste alto (UX-08) */
+.navbar {
+  --bs-navbar-color: #fff;
+  --bs-navbar-hover-color: #fff;
+  --bs-navbar-active-color: #fff;
+}
+
+.text-body-secondary {
+  color: #495057 !important;
+}
+
+:focus-visible {
+  outline: 3px solid #ffbf47;
+  outline-offset: 2px;
+}
