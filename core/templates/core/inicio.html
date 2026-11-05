@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset=""utf-8">
-    <meta name="viewport" content="width=device-width", initial-scale=1">
-    <title>AgroGMAO</title>
-</head>
-<body>
-    <h1>AgroGMAO</h1>
-    <p>La aplicación está en marcha.</p>
-    <p>Base de datos conectada: {{ version_bd }}</p>
-</body>
-</html>
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block contenido %}
+  <h1>AgroGMAO</h1>
+  <p>{% translate "La aplicación está en marcha." %}</p>
+  <p>{% translate "Base de datos conectada:" %} {{ version_bd }}</p>
+{% endblock %}
