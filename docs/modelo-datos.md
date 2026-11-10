@@ -19,7 +19,7 @@ erDiagram
     Usuarios |o--o{ Incidencias : asignada_a
     Incidencias |o--o{ Incidencias : duplicada_de
     Incidencias ||--o{ Comentarios_Incidencia : recibe
-    Usuarios ||--o{ Comentarios_Incidencia _ escribe
+    Usuarios ||--o{ Comentarios_Incidencia : escribe
     Equipos ||--o{ Ordenes_Trabajo : repara
     Incidencias |o--o{ Ordenes_Trabajo : origina
     Revisiones |o--o{ Ordenes_Trabajo : origina
