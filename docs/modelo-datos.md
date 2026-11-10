@@ -3,7 +3,7 @@
 Diagrama entidad-relación de AgroGMAO. El diccionario completo de campos está en el documento 'Modelo de Datos (E/R y diccionario)' del proyecto.
 
 ```mermaid
-erDiagrama
+erDiagram
     Tipos_Equipo ||--o{ Equipos : clasifica
     Tipos_Equipo ||--o{ Sintomas : tiene
     Tipos_Equipo ||--o{ Hojas_Ruta : tiene
