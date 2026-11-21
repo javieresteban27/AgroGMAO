@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "core",
     "cuentas",
     "explotacion",
+    "equipos",
 ]
 
 AUTH_USER_MODEL = "cuentas.Usuario"
