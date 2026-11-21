@@ -58,4 +58,11 @@ Entidades creadas en el hito H1 (Base):
 | Tipos_Equipo | `equipos` | `TipoEquipo` | CF-03 |
 | Equipos | `equipos` | `Equipo` | EQ-01, EQ-03, EQ-04, EQ-07 |
 
+Decisiones de H1:
+
+- El perfil del usuario (operario, mecánico, gerente) no es un campo: sale de los grupos de Django (US-02).
+- Todos los modelos salvo `Usuario` heredan de la clase abstracta `core.Trazable`, que guarda `creado_por`, `creado_en` y `modificado_en` (RN-09).
+- Estados de `Equipo`: `activo`, `en_reparacion` y `baja`. Un equipo de baja exige `fecha_baja`.
+- El número de serie es único solo si se informa.
+
 El resto de entidades del diagrama se crean en los hitos siguientes.
