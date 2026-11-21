@@ -2,18 +2,10 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class Usuario(AbstractUser):
-    """Usuario de AgroGMAO: el de Django es más un perfil (US-02, US-03)."""
+    """
+    Usuario de AgroGMAO.
 
-    class Perfil(models.TextChoices):
-        OPERARIO = "operario", "Operario"
-        MECANICO = "mecanico", "Mecánico"
-        GERENTE = "gerente", "Gerente"
-
-    perfil = models.CharField(
-        max_length= 10,
-        choices=Perfil.choices,
-        default=Perfil.OPERARIO,
-    )
-
-    def __str__(self):
-        return self.get_full_name() or self.username
+    El perfil (operario, mecánico, gerente) no es un campo: sale de los 
+    grupos de Django (US-02). Se define un modelo propio ahora porque cambiarlo
+    más adelante obligaría a rehacer la base de datos.
+    """

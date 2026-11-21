@@ -1,10 +1,12 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 
+from core.models import Trazable
+
 from decimal import Decimal
 
 
-class Parametro(models.Model):
+class Parametro(Trazable):
     """Dato de configuración de la explotación en formato clave-valor (CF-01)."""
 
     clave = models.CharField(max_length=50, primary_key=True)
@@ -18,7 +20,7 @@ class Parametro(models.Model):
         return f"{self.clave} = {self.valor}"
 
 
-class ClaseActividad(models.Model):
+class ClaseActividad(Trazable):
     """Clase de actividad con su tarifa por hora: taller, extras, nocturnas (CF-02)."""
 
     nombre = models.CharField(max_length=50, unique=True)

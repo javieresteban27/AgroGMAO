@@ -1,8 +1,11 @@
 from django.test import TestCase
 from django.db import IntegrityError
 from django.db.models import ProtectedError
+from django.core.exceptions import ValidationError
 
 from .models import TipoEquipo, Equipo
+
+from datetime import date
 
 class TipoEquipoTests(TestCase):
     def test_nace_activa(self):
@@ -48,3 +51,30 @@ class EquipoTests(TestCase):
     def test_texto_es_la_denominacion(self):
         equipo = Equipo(denominacion="Tractor viejo", familia=self.familia)
         self.assertEqual(str(equipo), "Tractor viejo")
+
+    def test_los_estados_son_activo_en_reparacion_y_baja(self):
+        self.assertEqual(
+            set(Equipo.Estado.values), {"activo", "en_taller", "baja"}
+        )
+
+    def test_la_base_de_datos_rechaza_una_baja_sin_fecha(self):
+        with self.assertRaises(IntegrityError):
+            Equipo.objects.create(
+                denominacion="A", familia=self.familia, estado=Equipo.Estado.BAJA
+            )
+
+    def test_una_baja_con_fecha_es_valida(self):
+        equipo = Equipo.objects.create(
+            denominacion="A",
+            familia=self.familia,
+            estado=Equipo.Estado.BAJA,
+            fecha_baja=date(2026, 11, 21),
+        )
+        self.assertEqual(equipo.estado, Equipo.Estado.BAJA)
+
+    def test_la_validacion_de_formularios_rechaza_una_baja_sin_fecha(self):
+        equipo = Equipo(
+            denominacion="A", familia=self.familia, estado=Equipo.Estado.BAJA
+        )
+        with self.assertRaises(ValidationError):
+            equipo.full_clean()
