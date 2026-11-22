@@ -14,6 +14,8 @@ from pathlib import Path
 from django.contrib.messages import constants as mensajes
 import os
 
+from datetime import timedelta
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -52,13 +54,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "core",
-    "cuentas",
-    "explotacion",
-    "equipos",
+    'core',
+    'cuentas',
+    'explotacion',
+    'equipos',
+    'axes',
 ]
 
-AUTH_USER_MODEL = "cuentas.Usuario"
+AUTH_USER_MODEL = 'cuentas.Usuario'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -66,8 +69,10 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.LoginRequiredMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -149,3 +154,32 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Mensajes: Bootstrap llama "danger" a los errores
 MESSAGE_TAGS = {mensajes.ERROR: "danger"}
+
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "inicio"
+LOGOUT_REDIRECT_URL = "login"
+
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+AXES_FAILURE_LIMIT = 3
+AXES_COOLOFF_TIME = timedelta(minutes=3)
+AXES_LOCKOUT_PARAMETERS = ["username"]
+"""
+Se bloquea solo por usuario: detrás de Docker o de un proxy todas las
+las peticiones pueden llegar con la misma IP y un bloqueo por IP dejaría
+fuera a todos. Revisar al desplegar en un servidor propio.
+"""
+SILENCED_SYSTEM_CHECKS = ["axes.W006"]
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_TEMPLATE = "cuentas/bloqueado.html"
+
+# Sesión y cookies (US-01, RNF-03). Las cookies "seguras" solo viajan por HTTPS:
+# activar DJANGO_COOKIES_SEGURAS=true al desplegar con HTTPS.
+COOKIES_SEGURAS = env("DJANGO_COOKIES_SEGURAS", "false").lower() == "true"
+SESSION_COOKIE_SECURE = COOKIES_SEGURAS
+CSRF_COOKIE_SECURE = COOKIES_SEGURAS
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"

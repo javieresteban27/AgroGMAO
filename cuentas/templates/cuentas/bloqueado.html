@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block titulo %}{% translate "Acceso bloqueado" %} · AgroGMAO{% endblock %}
+
+{% block contenido %}
+    <div class="alert alert-warning" role="alert">
+        <h1 class="h5">{% translate "Acceso bloqueado temporalmente" %}</h1>
+        <p class="mb-0">
+            {% translate "Ha habido demasiados intentos fallidos. Espera unos minutos y vuelve a probar. Si no recuerdas la contraseña, pide al gerente que te dé una temporal." %}
+        </p>
+    </div>
+    <a href="{% url 'login' %}" class="btn btn-primary btn-lg">{% translate "Volver a entrar" %}</a>
+{% endblock %}
