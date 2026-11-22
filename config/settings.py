@@ -149,3 +149,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Mensajes: Bootstrap llama "danger" a los errores
 MESSAGE_TAGS = {mensajes.ERROR: "danger"}
+
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "inicio"
+LOGOUT_REDIRECT_URL = "login"
