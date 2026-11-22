@@ -55,3 +55,44 @@ class AutenticacionTests(TestCase):
         errores_2 = contrasena_incorrecta.context["form"].non_field_errors()
         self.assertTrue(errores_1)
         self.assertEqual(errores_1, errores_2)
+
+class BloqueoTests(TestCase):
+    def setUp(self):
+        Usuario.objects.create_user(username="luis", password="clave-123")
+
+    def fallar(self, veces):
+        for _ in range(veces):
+            self.client.post(
+                reverse("login"), {"username": "luis", "password": "incorrecta"}
+            )
+
+    def test_se_bloquea_tras_demasiados_intentos_fallidos(self):
+        self.fallar(3)
+        respuesta = self.client.post(
+            reverse("login"), {"username": "luis", "password": "clave-123"}
+        )
+        self.assertContains(respuesta, "bloqueado", status_code=429)
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_un_acceso_correcto_reinicia_el_contador(self):
+        self.fallar(2)
+        entrada = self.client.post(
+            reverse("login"), {"username": "luis", "password": "clave-123"}
+        )
+        self.assertEqual(entrada.status_code, 302)
+        self.client.post(reverse("logout"))
+        self.fallar(2)
+        entrada = self.client.post(
+            reverse("login"), {"username": "luis", "password": "clave-123"}
+        )
+        self.assertEqual(entrada.status_code, 302)
+
+    def test_el_bloqueo_no_depende_de_que_el_usuario_exista(self):
+        for _ in range(3):
+            self.client.post(
+                reverse("login"), {"username": "inexistente", "password": "incorrecta"}
+            )
+        respuesta = self.client.post(
+            reverse("login"), {"username": "inexistente", "password": "incorrecta"}
+        )
+        self.assertContains(respuesta, "bloqueado", status_code=429)
