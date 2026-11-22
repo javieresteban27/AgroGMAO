@@ -1,8 +1,6 @@
 from django.db import connection
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
 
-@login_required
 def inicio(request):
     """Pantalla de inicio provisional: confirma que la aplicación y la base de datos funcionan."""
     with connection.cursor() as cursor:
