@@ -1,8 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
-from django.test import TestCase, Client
-from django.urls import reverse
+from django.test import TestCase, Client, override_settings
+from django.urls import reverse, include, path
 from django.conf import settings
 
 from django.core.exceptions import PermissionDenied
@@ -221,3 +221,40 @@ class PermisosTests(TestCase):
         peticion.user = self.crear_usuario("mecanico", MECANICO)
         with self.assertRaises(PermissionDenied):
             VistaDeGerente.as_view()(peticion)
+
+@perfil_requerido(GERENTE)
+def vista_de_costes(request):
+    return HttpResponse("tabla de costes")
+
+urlpatterns = [
+    path("", include("core.urls")),
+    path("cuentas/", include("cuentas.urls")),
+    path("costes/", vista_de_costes, name="costes"),
+]
+
+@override_settings(ROOT_URLCONF=__name__)
+class AccesoDenegadoTests(TestCase):
+    def entrar_como(self, nombre, grupo):
+        usuario = Usuario.objects.create_user(
+            username=nombre, password="clave-123"
+        )
+        usuario.groups.add(Group.objects.get(name=grupo))
+        self.client.force_login(usuario)
+
+    def test_un_operario_ve_el_mensaje_de_permiso_denegado(self):
+        self.entrar_como("operario", OPERARIO)
+        respuesta = self.client.get("/costes/")
+        self.assertContains(
+            respuesta, "No tienes permiso para ver esto", status_code=403
+        )
+
+    def test_un_gerente_entra(self):
+        self.entrar_como("gerente", GERENTE)
+        respuesta = self.client.get("/costes/")
+        self.assertContains(respuesta, "tabla de costes")
+
+    def test_sin_sesion_se_va_al_inicio_de_sesion(self):
+        respuesta = self.client.get("/costes/")
+        self.assertRedirects(
+            respuesta, f"{reverse('login')}?next=/costes/"
+        )
