@@ -43,3 +43,15 @@ class AutenticacionTests(TestCase):
         respuesta = self.client.post(reverse("logout"))
         self.assertRedirects(respuesta, reverse("login"))
         self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_el_error_es_el_mismo_si_falla_el_usuario_o_la_contrasena(self):
+        usuario_inexistente = self.client.post(
+            reverse("login"), {"username": "nadie", "password": "clave-123"}
+        )
+        contrasena_incorrecta = self.client.post(
+            reverse("login"), {"username": "luis", "password": "otra-clave"}
+        )
+        errores_1 = usuario_inexistente.context["form"].non_field_errors()
+        errores_2 = contrasena_incorrecta.context["form"].non_field_errors()
+        self.assertTrue(errores_1)
+        self.assertEqual(errores_1, errores_2)
