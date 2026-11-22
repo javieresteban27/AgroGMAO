@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
+from django.conf import settings
 
 from .models import Usuario
 
@@ -96,3 +97,34 @@ class BloqueoTests(TestCase):
             reverse("login"), {"username": "inexistente", "password": "incorrecta"}
         )
         self.assertContains(respuesta, "bloqueado", status_code=429)
+
+class SeguridadTests(TestCase):
+    def setUp(self):
+        self.usuario = Usuario.objects.create_user(
+            username="luis", password="clave-123"
+        )
+
+    def test_la_contrasena_se_guarda_con_hash(self):
+        self.assertNotIn("clave-123", self.usuario.password)
+        self.assertTrue(self.usuario.check_password("clave-123"))
+
+    def test_el_formulario_exige_token_csrf(self):
+        cliente = Client(enforce_csrf_checks=True)
+        respuesta = cliente.post(
+            reverse("login"), {"username": "luis", "password": "clave-123"}
+        )
+        self.assertEqual(respuesta.status_code, 403)
+
+    def test_la_cookie_de_sesion_no_es_accesible_desde_javascript(self):
+        self.client.post(
+            reverse("login"), {"username": "luis", "password": "clave-123"}
+        )
+        cookie = self.client.cookies[settings.SESSION_COOKIE_NAME]
+        self.assertTrue(cookie["httponly"])
+        self.assertEqual(cookie["samesite"], "Lax")
+
+    def test_el_formulario_esta_pensado_para_el_movil(self):
+        respuesta = self.client.get(reverse("login"))
+        self.assertContains(respuesta, 'autocomplete="username"')
+        self.assertContains(respuesta, 'autocomplete="current-password"')
+        self.assertContains(respuesta, "form-control-lg")

@@ -21,6 +21,7 @@ services:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-clave-solo-para-desarrollo-no-usar-en-produccion}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-true}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      DJANGO-COOKIES_SEGURAS: ${DJANGO_COOKIES_SEGURAS:-false}
       POSTGRES_DB: ${POSTGRES_DB:-agrogmao}
       POSTGRES_USER: ${POSTGRES_USER:-agrogmao}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agrogmao-desarrollo}

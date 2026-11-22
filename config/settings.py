@@ -174,3 +174,12 @@ fuera a todos. Revisar al desplegar en un servidor propio.
 SILENCED_SYSTEM_CHECKS = ["axes.W006"]
 AXES_RESET_ON_SUCCESS = True
 AXES_LOCKOUT_TEMPLATE = "cuentas/bloqueado.html"
+
+# Sesión y cookies (US-01, RNF-03). Las cookies "seguras" solo viajan por HTTPS:
+# activar DJANGO_COOKIES_SEGURAS=true al desplegar con HTTPS.
+COOKIES_SEGURAS = env("DJANGO_COOKIES_SEGURAS", "false").lower() == "true"
+SESSION_COOKIE_SECURE = COOKIES_SEGURAS
+CSRF_COOKIE_SECURE = COOKIES_SEGURAS
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
