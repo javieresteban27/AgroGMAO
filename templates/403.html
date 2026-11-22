@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block titulo %}{% translate "Sin permiso" %} · AgroGMAO{% endblock %}
+
+{% block contenido %}
+    <div class="alert alert-warning" role="alert">
+        <h1 class="h5">{% translate "No tienes permiso para ver esto" %}</h1>
+        <p class="mb-0">
+            {% translate "Tu perfili no incluye esta pantalla. Si crees que deberías verla, habla con el gerente." %}
+        </p>
+    </div>
+    <a href="{% url 'inicio' %}" clsas="btn btn-primary btn-lg">{% translate "Volver al inicio" %}</a>
+{% endblock %}

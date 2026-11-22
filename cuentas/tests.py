@@ -1,7 +1,24 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase, Client
-from django.urls import reverse
+from django.contrib.auth.models import Group
+
+from django.test import TestCase, Client, override_settings
+from django.urls import reverse, include, path
 from django.conf import settings
+
+from django.core.exceptions import PermissionDenied
+from django.test import RequestFactory
+from django.views import View
+from django.http import HttpResponse
+from django.contrib.auth.models import AnonymousUser
+
+from .permisos import (
+    GERENTE,
+    MECANICO,
+    OPERARIO,
+    PerfilRequeridoMixin,
+    perfil_requerido,
+    tiene_perfil,
+)
 
 from .models import Usuario
 
@@ -128,3 +145,116 @@ class SeguridadTests(TestCase):
         self.assertContains(respuesta, 'autocomplete="username"')
         self.assertContains(respuesta, 'autocomplete="current-password"')
         self.assertContains(respuesta, "form-control-lg")
+
+class GruposDePerfilTests(TestCase):
+    def test_los_tres_grupos_existen_tras_migrar(self):
+        nombres = set(Group.objects.values_list("name", flat=True))
+        self.assertLessEqual({"Operario", "Mecánico", "Gerente"}, nombres)
+
+class PermisosTests(TestCase):
+    def crear_usuario(self, nombre, *grupos, **extra):
+        usuario = Usuario.objects.create_user(
+            username=nombre, password="clave-123", **extra
+        )
+        for grupo in grupos:
+            usuario.groups.add(Group.objects.get(name=grupo))
+        return usuario
+
+    def test_un_perfil_solo_pasa_con_su_grupo(self):
+        operario = self.crear_usuario("operario", OPERARIO)
+        self.assertTrue(tiene_perfil(operario, OPERARIO))
+        self.assertFalse(tiene_perfil(operario, GERENTE))
+
+    def test_cada_perfil_se_distingue_de_los_demas(self):
+        for perfil in (OPERARIO, MECANICO, GERENTE):
+            usuario = self.crear_usuario(f"u-{perfil}", perfil)
+            otros = {OPERARIO, MECANICO, GERENTE} - {perfil}
+            self.assertTrue(tiene_perfil(usuario, perfil))
+            for otro in otros:
+                self.assertFalse(tiene_perfil(usuario, otro))
+
+    def test_un_usuario_con_varios_grupos_suma_sus_permisos(self):
+        todoterreno = self.crear_usuario("todo", OPERARIO, MECANICO, GERENTE)
+        self.assertTrue(tiene_perfil(todoterreno, GERENTE))
+        self.assertTrue(tiene_perfil(todoterreno, MECANICO))
+        mecanico_y_operario = self.crear_usuario("dos", OPERARIO, MECANICO)
+        self.assertTrue(tiene_perfil(mecanico_y_operario, MECANICO, GERENTE))
+        self.assertFalse(tiene_perfil(mecanico_y_operario, GERENTE))
+
+    def test_sin_grupos_no_hay_perfil(self):
+        sin_perfil = self.crear_usuario("nadie")
+        self.assertFalse(tiene_perfil(sin_perfil, OPERARIO, MECANICO, GERENTE))
+
+    def test_un_anonimo_no_tiene_perfil(self):
+        self.assertFalse(tiene_perfil(AnonymousUser(), OPERARIO))
+
+    def test_el_superusuario_pasa_siempre(self):
+        admin = Usuario.objects.create_superuser("admin", password="clave-123")
+        self.assertTrue(tiene_perfil(admin, GERENTE))
+
+    def test_el_decorador_deja_pasar_o_deniega(self):
+        @perfil_requerido(GERENTE)
+        def vista(request):
+            return HttpResponse("ok")
+
+        fabrica = RequestFactory()
+        peticion = fabrica.get("/")
+        peticion.user = self.crear_usuario("gerente", GERENTE)
+        self.assertEqual(vista(peticion).status_code, 200)
+
+        peticion.user = self.crear_usuario("operario", OPERARIO)
+        with self.assertRaises(PermissionDenied):
+            vista(peticion)
+
+    def test_el_mixin_deja_pasar_o_deniega(self):
+        class VistaDeGerente(PerfilRequeridoMixin, View):
+            perfiles = (GERENTE,)
+
+            def get(self, request):
+                return HttpResponse("ok")
+
+        fabrica = RequestFactory()
+        peticion = fabrica.get("/")
+        peticion.user = self.crear_usuario("gerente", GERENTE)
+        self.assertEqual(VistaDeGerente.as_view()(peticion).status_code, 200)
+
+        peticion.user = self.crear_usuario("mecanico", MECANICO)
+        with self.assertRaises(PermissionDenied):
+            VistaDeGerente.as_view()(peticion)
+
+@perfil_requerido(GERENTE)
+def vista_de_costes(request):
+    return HttpResponse("tabla de costes")
+
+urlpatterns = [
+    path("", include("core.urls")),
+    path("cuentas/", include("cuentas.urls")),
+    path("costes/", vista_de_costes, name="costes"),
+]
+
+@override_settings(ROOT_URLCONF=__name__)
+class AccesoDenegadoTests(TestCase):
+    def entrar_como(self, nombre, grupo):
+        usuario = Usuario.objects.create_user(
+            username=nombre, password="clave-123"
+        )
+        usuario.groups.add(Group.objects.get(name=grupo))
+        self.client.force_login(usuario)
+
+    def test_un_operario_ve_el_mensaje_de_permiso_denegado(self):
+        self.entrar_como("operario", OPERARIO)
+        respuesta = self.client.get("/costes/")
+        self.assertContains(
+            respuesta, "No tienes permiso para ver esto", status_code=403
+        )
+
+    def test_un_gerente_entra(self):
+        self.entrar_como("gerente", GERENTE)
+        respuesta = self.client.get("/costes/")
+        self.assertContains(respuesta, "tabla de costes")
+
+    def test_sin_sesion_se_va_al_inicio_de_sesion(self):
+        respuesta = self.client.get("/costes/")
+        self.assertRedirects(
+            respuesta, f"{reverse('login')}?next=/costes/"
+        )
