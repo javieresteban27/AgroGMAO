@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.conf import settings
@@ -128,3 +130,8 @@ class SeguridadTests(TestCase):
         self.assertContains(respuesta, 'autocomplete="username"')
         self.assertContains(respuesta, 'autocomplete="current-password"')
         self.assertContains(respuesta, "form-control-lg")
+
+class GruposDePerfilTests(TestCase):
+    def test_los_tres_grupos_existen_tras_migrar(self):
+        nombres = set(Group.objects.values_list("name", flat=True))
+        self.assertLessEqual({"Operario", "Mecánico", "Gerente"}, nombres)
